@@ -1,25 +1,20 @@
-import { createPlayer, deletePlayer, getPlayers,movePlayer } from "./api.js";
+import { createPlayer } from "./api.js";
 import { getRandomSafeSpot } from "./utils.js";
+import { obstacleCoordinates } from "./constants.js";
 const gameContainer = document.querySelector(".game-container");
 
-export async function handleCreateMember() {
-    const label = document.getElementById("player-name");
-    const value = label.value;
-    console.log("Input Value:", value);
-
-    const {x,y} = getRandomSafeSpot();
-  const payload = {
-    name: value,
-    color: 'red',
-    score:0,
-    x:x,
-    y:y,
-  };
-
-  const playerId = await createPlayer(payload);
-  console.log("Player ID:", playerId);
+export async function handleCreateMember(userName){
+  let {x,y} = getRandomSafeSpot();
+    const payload = {
+      name: userName,
+    };
+  await createPlayer(payload);
+  /*
+  await createPlayer(payload);
+  const players = await getPlayers();
+  console.log("Player ID:", players.data[0]._id);
   label.value = "";
-
+  */
   const characterElement = document.createElement("div");
   characterElement.classList.add("Character", "grid-cell");
   characterElement.classList.add("you");
@@ -35,25 +30,45 @@ export async function handleCreateMember() {
       //playerElements[addedPlayer.id] = characterElement;
 
       //Fill in some initial state
-      characterElement.querySelector(".Character_name").innerText = value;
+      characterElement.querySelector(".Character_name").innerText = userName;
       characterElement.querySelector(".Character_coins").innerText = 0;
-      characterElement.setAttribute("data-color", 'red');
+      //characterElement.setAttribute("data-color", 'red');
       //characterElement.setAttribute("data-direction", addedPlayer.direction);
-      const left = 16 * x + "px";
-      const top = 16 * y - 4 + "px";
+      let left = 16 * x + "px";
+      let top = 16 * y  + "px";
       characterElement.style.transform = `translate3d(${left}, ${top}, 0)`;
       gameContainer.appendChild(characterElement);
-
-      gameContainer.addEventListener("click", (event) => {
-        const rect = gameContainer.getBoundingClientRect();
-        const offsetX = event.clientX - rect.left;
-        const offsetY = event.clientY - rect.top;
-        
-        // Calculate new position based on click coordinates
-        const newX = Math.floor(offsetX / 16);
-        const newY = Math.floor(offsetY / 16);
-
-        // Move the player to the new position
-        movePlayer(playerId, newX, newY);
+      
+      document.addEventListener("keydown", (event) => {
+        if (event.key === "ArrowUp") {
+            handleArrowPress(0, -1);
+        } else if (event.key === "ArrowDown") {
+            handleArrowPress(0, 1);
+        } else if (event.key === "ArrowLeft") {
+            handleArrowPress(-1, 0);
+        } else if (event.key === "ArrowRight") {
+            handleArrowPress(1, 0);
+        }
     });
+
+    // Define handleArrowPress function
+    function handleArrowPress(xOffset, yOffset) {
+        if(isValidPosition(x+xOffset, y + yOffset, obstacleCoordinates)){
+          x += xOffset; // Update character's grid x position
+          y += yOffset; // Update character's grid y position
+          console.log("x = ",x,"y =",y);
+          let newX = 16 * x + "px"; 
+          let newY = 16 * y - 4 + "px"; 
+          characterElement.style.transform = `translate3d(${newX}, ${newY}, 0)`;
+        }
+       
+  }
+
+  function isValidPosition(x, y, obstacleCoordinates) {
+    // Check if x and y are within the map boundaries and not obstructed by any obstacle
+    return (
+        y>3 && y<12 && x<14 && x>0 && 
+        !obstacleCoordinates.some(coord => coord.x === x && coord.y === y)
+    );
+}
 }

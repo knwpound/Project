@@ -25,3 +25,34 @@ export const createPlayer = async (req, res) => {
     // TODO: implement this function
     res.status(501).send("Unimplemented");
   };
+
+  export const updatePlayer = async (req, res) => {
+    try {
+        // Extract player ID from request parameters
+        const playerId = req.params.id;
+        
+        // Extract new position data from request body
+        const { x, y } = req.body;
+
+        // Find the player in the database by ID
+        const player = await Player.findById(playerId);
+
+        // If player not found, respond with 404 Not Found
+        if (!player) {
+            return res.status(404).json({ message: 'Player not found' });
+        }
+
+        // Update player's position
+        player.x = x;
+        player.y = y;
+
+        // Save the updated player data to the database
+        await player.save();
+
+        // Respond with the updated player data
+        res.status(200).json(player);
+    } catch (error) {
+        // If an error occurs, respond with 500 Internal Server Error
+        res.status(500).json({ message: error.message });
+    }
+};
