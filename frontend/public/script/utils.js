@@ -77,4 +77,4 @@ function getRandomSafeSpot() {
     ]);
 }
 
-export { randomFromArray, getKeyString, isSolid, getRandomSafeSpot };
+export { randomFromArray, getKeyString, isSolid, getRandomSafeSpot, createName};

@@ -93,7 +93,7 @@ button:active {
   left: 5px;
   width: 7px;
   height: 5px;
-  background: url(/images/arrow.png) no-repeat no-repeat;
+  background: url(/images/arrow-yellow.png) no-repeat no-repeat;
 }
 .Character_sprite {
   overflow: hidden;
@@ -142,7 +142,7 @@ button:active {
 
 /* Coins */
 .Coin_sprite {
-  background: url(/images/coin.png) no-repeat no-repeat;
+  background: url(/images/bone.png) no-repeat no-repeat;
   animation: coinFloat 0.8s linear infinite alternate-reverse;
 }
 @keyframes coinFloat {
@@ -150,7 +150,7 @@ button:active {
   to { transform: translateY(5px) }
 }
 .Coin_shadow {
-  background: url(/images/coin-shadow.png) no-repeat no-repeat;
+  background: url(/images/bone-shadow.png) no-repeat no-repeat;
 }
 .Countdown{
   font-weight: bold;
