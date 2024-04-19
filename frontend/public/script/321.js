@@ -5,11 +5,14 @@ import { obstacleCoordinates, playerColors } from "./constants.js";
 
 const playerInfo = document.querySelector(".player-info")
 const gameContainer = document.querySelector(".game-container");
-let playable = true;
-let userName = "";
-let score = 0;
-let playerID;
 
+let userName = "";
+let player;
+let playerID;
+let score = 0;
+
+let playable = true;
+let replay=false;
 // create a coin constantly
 export async function handleCreateCoin() {
     let {x,y} = getRandomSafeSpot();
@@ -47,13 +50,13 @@ export async function handleCreateCoin() {
 // create a player character
 export async function handleCreateMember(userName){
     let {x,y} = getRandomSafeSpot();
-      const payload = {
-        name: userName,
-      };
-
-    const player = await createPlayer(payload);
-    playerID = player.data._id;
-    console.log(playerID);
+    if(!replay){
+        const payload = {
+          name: userName,
+        };
+         let player = await createPlayer(payload);
+        playerID = player.data._id;
+    }
     const characterElement = document.createElement("div");
     characterElement.classList.add("Character", "grid-cell");
     characterElement.classList.add("you");
@@ -105,7 +108,7 @@ export async function handleCreateMember(userName){
             let newX = 16 * x + "px"; 
             let newY = 16 * y - 4 + "px"; 
             characterElement.style.transform = `translate3d(${newX}, ${newY}, 0)`;
-            let newScore = tryToCollectCoin(x,y,player);
+            let newScore = tryToCollectCoin(x,y);
             characterElement.querySelector(".Character_coins").innerText = newScore;
           }
          
@@ -118,7 +121,7 @@ export async function handleCreateMember(userName){
           !obstacleCoordinates.some(coord => coord.x === x && coord.y === y)
       );
   }
-    function tryToCollectCoin(x,y,player) {
+    function tryToCollectCoin(x,y) {
       const payload = {
         "x" : x,
         "y" : y
@@ -141,11 +144,14 @@ export async function handleCreateMember(userName){
     timer.remove();
     gameContainer.innerHTML="";
     playable=true;
+    score=0;
+    replay=true;
     launchAnimation(userName);
   }
 
 // game over animation
 export async function endAnimation(countdownDiv) {
+    playable = false;
     countdownDiv.style.backgroundColor = "red";
 
     var gameDiv = document.createElement("div");
@@ -172,12 +178,17 @@ export async function endAnimation(countdownDiv) {
       handleResetGame();
     });
     
-    playable = false;
+    player = await getOnePlayer(playerID);
+    if(player.score<score){
+      playable = false;
     const payload = {
       name : userName,
       score : score
     };
     await updateScore(playerID, payload);
+    }
+
+    
 }
 
 // game countdown
