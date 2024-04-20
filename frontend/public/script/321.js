@@ -1,4 +1,4 @@
-import { createCoin, deleteCoin, getCoins, getOnePlayer, updateScore } from "./api.js";
+import { createCoin, getCoins, getOnePlayer, updateScore, getUserByUsername } from "./api.js";
 import { getRandomSafeSpot, createName, randomFromArray } from "./utils.js";
 import { createPlayer } from "./api.js";
 import { obstacleCoordinates, playerColors } from "./constants.js";
@@ -50,13 +50,23 @@ export async function handleCreateCoin() {
 // create a player character
 export async function handleCreateMember(userName){
     let {x,y} = getRandomSafeSpot();
-    if(!replay){
+    const existingUser = await getUserByUsername(userName);
+
+    if (existingUser) {
+        // User already exists, get the _id of the existing user
+        playerID = existingUser._id;
+        console.log(`User ${userName} already exists with ID: ${playerID}`);
+    } else {
+        // User doesn't exist, create a new one
         const payload = {
-          name: userName,
+            name: userName,
         };
-         let player = await createPlayer(payload);
-        playerID = player.data._id;
+
+        const newPlayer = await createPlayer(payload);
+        playerID = newPlayer.data._id;
+        console.log(`Created new user ${userName} with ID: ${playerID}`);
     }
+
     const characterElement = document.createElement("div");
     characterElement.classList.add("Character", "grid-cell");
     characterElement.classList.add("you");
@@ -80,8 +90,6 @@ export async function handleCreateMember(userName){
 
         if (playable) {
           document.addEventListener("keydown", handleArrowPress);
-      }else{
-        console.log("K");
       }
         
       // Define handleArrowPress function
@@ -197,7 +205,7 @@ export async function launchGame(countdownDiv) {
     
     if (!countdownDiv) {
         console.error("Element with class 'Countdown' not found.");
-        return; // Exit the function if timer is null
+        return; 
     }
     
     var countdownInterval = setInterval(function() {
@@ -208,7 +216,6 @@ export async function launchGame(countdownDiv) {
 
         if (countdown < 0) {
             clearInterval(countdownInterval); // Stop the countdown when it reaches zero
-            // Add code to handle game launch here
             endAnimation(countdownDiv);
         }
     }, 1000); // 1000 milliseconds = 1 second
@@ -219,12 +226,11 @@ export async function launchAnimation() {
 
   const label = document.getElementById("player-name");
   console.log(label);
+  userName = label.value;
   if (userName == "") {
-    if(label.value == "" ){
       userName = createName();
     }else{
       userName = label.value;
-    }
   }
   // create countdown box
   var countdownDiv = document.createElement("div");
